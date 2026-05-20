@@ -846,10 +846,13 @@ func (c *creator) fixedVulnerabilities(ctx context.Context, v *csaf.Vulnerabilit
 				log.WarnContext(ctx, "bad purl", "reason", err, "purl", st.PURL, "missing", "ModuleName")
 				continue
 			}
-			sev, err := cvssVectorFromScore(st.Score)
-			if err != nil {
-				log.WarnContext(ctx, "bad score", "reason", err, "found", st.Score != nil)
-				continue
+			var sev string
+			if sc := st.Score; sc != nil {
+				sev, err = cvssVectorFromScore(sc)
+				if err != nil {
+					log.WarnContext(ctx, "bad score", "reason", err, "found", true)
+					continue
+				}
 			}
 
 			if err := init(ctx, vuln); err != nil {
