@@ -923,3 +923,45 @@ func TestInsertLinksAliases(t *testing.T) {
 		})
 	}
 }
+
+func TestIdToAlias(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      string
+		wantErr bool
+	}{
+		{
+			name:    "CVE format",
+			id:      "CVE-2024-24786",
+			wantErr: false,
+		},
+		{
+			name:    "GHSA format",
+			id:      "GHSA-8r3f-844c-mc37",
+			wantErr: false,
+		},
+		{
+			name:    "CERT/CC VU format without hyphen",
+			id:      "VU#123335",
+			wantErr: false,
+		},
+		{
+			name:    "single word identifier",
+			id:      "NOHYPHEN",
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			alias, err := idToAlias(tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("idToAlias(%q) error = %v, wantErr %v", tt.id, err, tt.wantErr)
+				return
+			}
+			if err == nil && alias.Name != "" {
+				t.Logf("idToAlias(%q) = {Space: %q, Name: %q}", tt.id, alias.Space.Value(), alias.Name)
+			}
+		})
+	}
+}

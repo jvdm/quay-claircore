@@ -624,7 +624,9 @@ func (e *ecs) Insert(ctx context.Context, log *slog.Logger, skipped *stats, name
 		if err != nil {
 			return err
 		}
-		proto.Aliases = append(proto.Aliases, a)
+		if a.Name != "" {
+			proto.Aliases = append(proto.Aliases, a)
+		}
 	}
 	proto.Links = b.String()
 	for i := range a.Affected {
@@ -798,10 +800,11 @@ func (e *ecs) Insert(ctx context.Context, log *slog.Logger, skipped *stats, name
 }
 
 // IdToAlias turns an OSV identifier into a [claircore.Alias].
+// Returns an empty alias for identifiers without hyphens (e.g., "VU#123335").
 func idToAlias(id string) (claircore.Alias, error) {
 	space, name, ok := strings.Cut(id, "-")
 	if !ok {
-		return claircore.Alias{}, invalidIdentifier(id)
+		return claircore.Alias{}, nil
 	}
 	return claircore.Alias{
 		Space: unique.Make(space),
