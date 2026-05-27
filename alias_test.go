@@ -1,6 +1,7 @@
 package claircore
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"unique"
@@ -70,5 +71,25 @@ func TestAlias(t *testing.T) {
 				t.Errorf("got: %v, want: %v", got, want)
 			}
 		})
+	})
+
+	t.Run("JSON", func(t *testing.T) {
+		a := Alias{Space: unique.Make("CVE"), Name: "2024-24786"}
+		data, err := json.Marshal(a)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := `{"Space":"CVE","Name":"2024-24786"}`
+		if string(data) != want {
+			t.Errorf("marshal: got %s, want %s", data, want)
+		}
+
+		var b Alias
+		if err := json.Unmarshal(data, &b); err != nil {
+			t.Fatal(err)
+		}
+		if !a.Equal(b) {
+			t.Errorf("unmarshal: got %v, want %v", b, a)
+		}
 	})
 }

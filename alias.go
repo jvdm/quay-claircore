@@ -1,6 +1,7 @@
 package claircore
 
 import (
+	"encoding/json"
 	"strings"
 	"unique"
 )
@@ -48,4 +49,28 @@ func (a Alias) Equal(b Alias) bool {
 // A invalid alias is one with a missing or empty Space or Name.
 func (a Alias) Valid() bool {
 	return a.Space != unique.Handle[string]{} && a.Space.Value() != "" && a.Name != ""
+}
+
+type aliasJSON struct {
+	Space string `json:"Space"`
+	Name  string `json:"Name"`
+}
+
+// MarshalJSON implements [json.Marshaler].
+func (a Alias) MarshalJSON() ([]byte, error) {
+	return json.Marshal(aliasJSON{
+		Space: a.Space.Value(),
+		Name:  a.Name,
+	})
+}
+
+// UnmarshalJSON implements [json.Unmarshaler].
+func (a *Alias) UnmarshalJSON(data []byte) error {
+	var aj aliasJSON
+	if err := json.Unmarshal(data, &aj); err != nil {
+		return err
+	}
+	a.Space = unique.Make(aj.Space)
+	a.Name = aj.Name
+	return nil
 }
