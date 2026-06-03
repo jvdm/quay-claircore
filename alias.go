@@ -2,9 +2,13 @@ package claircore
 
 import (
 	"encoding/json"
+	"log/slog"
 	"strings"
+	"sync"
 	"unique"
 )
+
+var aliasUnmarshalOnce sync.Once
 
 // Alias is an identifier for the same conceptual vulnerability.
 // An alias has two parts: the namespace and the name.
@@ -70,6 +74,9 @@ func (a Alias) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements [json.Unmarshaler].
 func (a *Alias) UnmarshalJSON(data []byte) error {
+	aliasUnmarshalOnce.Do(func() {
+		slog.Info("DEBUG: jvdm/quay-claircore Alias.UnmarshalJSON is being used (unique.Handle fork)")
+	})
 	var v aliasJSON
 	if err := json.Unmarshal(data, &v); err != nil {
 		return err
